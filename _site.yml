@@ -1,0 +1,11 @@
+name: "blog"
+title: "its-gazza's blog"
+description: |
+  A blog that holds various things I found interesting 
+output_dir: "docs"
+navbar:
+  right:
+    - text: "Home"
+      href: index.html
+  search: false
+output: distill::distill_article
