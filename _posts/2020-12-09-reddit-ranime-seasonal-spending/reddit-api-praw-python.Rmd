@@ -1,0 +1,81 @@
+---
+title: "/r/anime Seasonal Spending"
+description: |
+  How much does /r/anime spend per season?
+author:
+  - name: its-gazza
+    url: {}
+date: 12-09-2020
+output:
+  distill::distill_article:
+    self_contained: false
+editor_options: 
+  chunk_output_type: console
+draft: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+This post will look at how much does [/r/anime](https://www.reddit.com/r/anime/)
+spend per season in the past two years.
+
+## Getting the data
+In order to get the data I use [praw](https://praw.readthedocs.io/en/latest/) 
+for Python to do the following in [reddit_api.py](./reddit_api.py):  
+
+* From [holo/season_configs](https://github.com/r-anime/holo/tree/master/season_configs)
+download each seasons yaml
+* Loop through each title and use `.search()` to get all episode info
+* Store episode info under dataframe `output`
+* Write result as csv
+
+## Load data
+Now that I've explained how to get the data, we'll read in the data  
+
+```{r Read data}
+library(tidyverse)
+library(readr)
+library(here)
+library(knitr)
+library(scales)
+
+df <- read_csv('./output.csv')
+
+head(df) %>% 
+  kable()
+```
+
+## Aggregating by season
+Now we'll look at how much /r/anime spend per season  
+
+```{r}
+df %>% 
+  group_by(year, season) %>%
+  summarise(total_karma = sum(karma),
+            total_coins = sum(coins),
+            total_titles = sum(n_distinct(title))) %>%
+  mutate(year = as.character(year)) %>% 
+  ggplot(aes(x = season, y = total_coins, col = year)) + 
+  geom_point(size = 3) + 
+  scale_y_continuous(labels = comma) + 
+  labs(title = "/r/anime Spend per season",
+       x = "Season",
+       y = "Total Coins Spend",
+       col = "Year")
+```
+
+## Aggregate by show
+
+```{r}
+df %>% 
+  group_by(title) %>% 
+  summarise(total_karma = sum(karma),
+            total_coins = sum(coins),
+            episodes = n()) %>%
+  arrange(total_karma %>% desc)
+```
+
+
